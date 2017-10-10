@@ -4,14 +4,48 @@ import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import FormsyText from 'formsy-material-ui/lib/FormsyText';
 import RaisedButton from 'material-ui/RaisedButton';
 import { Base,styles } from './base';
+import reqwest from 'reqwest';
 
 export class SignUp extends Base {
+  submit(){
+    reqwest({
+      url: '/users.json',
+      method: 'POST',
+      data: {
+        user:{
+          email: this.state.email,
+          password: this.state.password,
+          passwordConfirmation: this.state.passwordConfirmation
+        }
+      },
+      headers:{
+        'X-CSRF-Token': window.CursoFacilito.token
+      }
+    }).then(data=> {
+      console.log(data);
+      this.reload();
+    }).catch(err => this.handleError(err));
+  }
+
+  handleError(err){
+    const jsonErrors = JSON.parse(err.response);
+    const errors = jsonErrors.errors;
+    let errorsResponse = [];
+    for(let key in errors){
+      errorsResponse.push(<li>{errors[key]}</li>)
+    }
+    this.setState({
+      error: errorsResponse
+    })
+  }
 
   render(){ return (
     <MuiThemeProvider>
       <Formsy.Form onValid={()=>this.enableSubmitButton()}
-                  onInvalid={()=>this.disableSubmitButton()} >
+                  onInvalid={()=>this.disableSubmitButton()}
+                  onValidSubmit={()=> this.submit()}>
         <div>
+          <ul>{this.state.error}</ul>
           <FormsyText
             onChange={(ev)=> this.syncField(ev,"email")}
             name="email"

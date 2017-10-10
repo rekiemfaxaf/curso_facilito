@@ -27,6 +27,10 @@ export class Base extends React.Component {
     });
   }
 
+  reload(){
+    window.location.href = window.location.href;
+  }
+
   syncField(ev,fieldName){
     let element = ev.target;
     let value = element.value;
